@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Delivery Routes</title>
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f4f4;
+            margin: 0;
+        }
+
+        h2 {
+            text-align: center;
+            padding: 10px;
+        }
+
+        #map {
+            height: 600px;
+            width: 95%;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        .marker-number {
+            background: white;
+            border-radius: 50%;
+            border: 2px solid black;
+            text-align: center;
+            font-weight: bold;
+            width: 25px;
+            height: 25px;
+            line-height: 25px;
+        }
+
+        .legend {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>🚚 Delivery Routes</h2>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+
+        var map = L.map('map').setView([32.0853, 34.7818], 12);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+            .addTo(map);
+
+        // נתונים
+        var couriers = [
+            {
+                courierName: "David Shapiro",
+                color: "red",
+                stops: [
+                    { order: 1, lat: 32.077, lng: 34.782, address: "Dizengoff Center" },
+                    { order: 2, lat: 32.065, lng: 34.781, address: "Levinsky Market" },
+                    { order: 3, lat: 32.067, lng: 34.788, address: "Yehuda Hamaccabi" }
+                ]
+            },
+            {
+                courierName: "Frank Levy",
+                color: "blue",
+                stops: [
+                    { order: 1, lat: 32.114, lng: 34.796, address: "Ramat Aviv" },
+                    { order: 2, lat: 32.218, lng: 34.857, address: "Netanya Center" }
+                ]
+            }
+        ];
+
+        var allPoints = [];
+
+        // ציור מסלולים
+        couriers.forEach(courier => {
+
+            let routePoints = [];
+
+            courier.stops.forEach(stop => {
+
+                let icon = L.divIcon({
+                    className: 'marker-number',
+                    html: stop.order
+                });
+
+                L.marker([stop.lat, stop.lng], { icon: icon })
+                    .addTo(map)
+                    .bindPopup(`
+                <b>${courier.courierName}</b><br>
+                Stop ${stop.order}<br>
+                ${stop.address}
+            `);
+
+                routePoints.push([stop.lat, stop.lng]);
+                allPoints.push([stop.lat, stop.lng]);
+            });
+
+            L.polyline(routePoints, {
+                color: courier.color,
+                weight: 5
+            }).addTo(map);
+        });
+
+        // התאמת זום למסלול
+        map.fitBounds(allPoints);
+
+
+        // Legend
+        var legend = L.control({ position: 'bottomright' });
+
+        legend.onAdd = function () {
+
+            var div = L.DomUtil.create('div', 'legend');
+
+            couriers.forEach(c => {
+                div.innerHTML += `
+                <div>
+                    <span style="color:${c.color};font-weight:bold">
+                    ■ ${c.courierName}
+                    </span>
+                </div>`;
+            });
+
+            return div;
+        };
+
+        legend.addTo(map);
+
+    </script>
+
+</body>
+</html>
