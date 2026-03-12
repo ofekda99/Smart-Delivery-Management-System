@@ -61,5 +61,10 @@ namespace Smart_Delivery_Management_System.Repositories
 
             return delivers;
         }
+
+        public async Task<User> GetByEmail(string email)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.DeletedAt == null);
+        }
     }
 }

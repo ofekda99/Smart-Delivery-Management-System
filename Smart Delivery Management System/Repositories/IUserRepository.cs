@@ -1,4 +1,5 @@
-﻿using Smart_Delivery_Management_System.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Smart_Delivery_Management_System.Models;
 
 namespace Smart_Delivery_Management_System.Repositories
 {
@@ -17,6 +18,8 @@ namespace Smart_Delivery_Management_System.Repositories
         // שיטת עזר לבדיקה לפני מחיקה
         Task<bool> HasCouriers(int userId);
         Task<bool> HasDeliveries(int userId);
+
+        Task<User> GetByEmail(string email);
 
     }
 }
