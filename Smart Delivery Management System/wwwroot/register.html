@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿﻿
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -33,8 +34,8 @@
                     <input type="text" id="fullName" class="form-control" placeholder="ישראל ישראלי" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">שם משתמש</label>
-                    <input type="text" id="regUsername" class="form-control" required>
+                    <label class="form-label">אימייל (שם משתמש)</label>
+                    <input type="email" id="regUsername" class="form-control" placeholder="example@mail.com" required>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">טלפון</label>
@@ -43,13 +44,6 @@
                 <div class="col-md-12 mb-3">
                     <label class="form-label">סיסמה</label>
                     <input type="password" id="regPassword" class="form-control" required>
-                </div>
-                <div class="col-md-12 mb-4">
-                    <label class="form-label">סוג חשבון</label>
-                    <select id="role" class="form-select" required>
-                        <option value="Courier">שליח</option>
-                        <option value="Admin">מנהל מערכת</option>
-                    </select>
                 </div>
             </div>
             <button type="submit" class="btn btn-success w-100 mb-3">הירשם עכשיו</button>
@@ -63,22 +57,25 @@
     <script>
         const API_BASE = "https://localhost:44333/api";
 
-        document.getElementById('registerForm').onsubmit = async function(e) {
+        document.getElementById('registerForm').onsubmit = async function (e) {
             e.preventDefault();
             const msgDiv = document.getElementById('responseMsg');
+            msgDiv.innerText = "שולח נתונים...";
 
             const userData = {
-                name: document.getElementById('fullName').value,
-                username: document.getElementById('regUsername').value,
-                phoneNumber: document.getElementById('phone').value,
-                password: document.getElementById('regPassword').value,
-                role: document.getElementById('role').value
+                FullName: document.getElementById('fullName').value,
+                Email: document.getElementById('regUsername').value,
+                Password: document.getElementById('regPassword').value,
+                Role: "Courier" // default role
             };
 
             try {
-                const res = await fetch(`${API_BASE}/Account/register`, {
+                const res = await fetch(`${API_BASE}/User`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify(userData)
                 });
 
@@ -87,12 +84,13 @@
                     msgDiv.innerText = "ההרשמה בוצעה בהצלחה! מעביר אותך להתחברות...";
                     setTimeout(() => window.location.href = 'login.html', 2000);
                 } else {
-                    const err = await res.text();
-                    throw new Error(err || "שגיאה ברישום");
+                    const errText = await res.text();
+                    throw new Error(errText || "שגיאה ברישום");
                 }
             } catch (err) {
                 msgDiv.className = "text-danger mt-3 text-center";
                 msgDiv.innerText = "שגיאה: " + err.message;
+                console.error("Reg error:", err);
             }
         };
     </script>

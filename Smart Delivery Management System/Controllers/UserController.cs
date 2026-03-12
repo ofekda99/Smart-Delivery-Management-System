@@ -65,8 +65,8 @@ namespace Smart_Delivery_Management_System.Controllers
             var userToCreate = new User
             {
                 Email = createUserDto.Email,
-                FullName = createUserDto.FullName
-                
+                FullName = createUserDto.FullName,
+                Role = "Courier" // Default role, can be changed to accept from DTO if needed
             };
 
             await _repo.Add(userToCreate, createUserDto.Password);
@@ -139,5 +139,29 @@ namespace Smart_Delivery_Management_System.Controllers
             return NoContent();
         }
 
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] UserLoginDto loginDto)
+        {
+            var user = await _repo.GetByEmail(loginDto.Email);
+
+            if (user == null)
+            {
+                return Unauthorized(new { message = "אימייל או סיסמה שגויים" });
+            }
+
+            bool isPasswordValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash);
+
+            if (!isPasswordValid)
+            {
+                return Unauthorized(new { message = "אימייל או סיסמה שגויים" });
+            }
+
+            return Ok(new
+            {
+                id = user.Id,
+                fullName = user.FullName,
+                role = user.Role // "Admin" or "Courier"
+            });
+        }
     }
 }
