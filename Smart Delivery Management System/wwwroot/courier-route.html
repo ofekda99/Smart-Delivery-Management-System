@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Courier Route</title>
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        body {
+            font-family: Arial;
+            margin: 0;
+            padding: 0;
+        }
+
+        #header {
+            padding: 10px;
+            background: #2c3e50;
+            color: white;
+        }
+
+        #map {
+            height: 90vh;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="header">
+        <h2>Courier Route Map</h2>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // קבל courierId מה-URL
+        const params = new URLSearchParams(window.location.search);
+        const courierId = params.get("courierId") || 1; // ברירת מחדל = 1
+        console.log("CourierId:", courierId);
+
+        const map = L.map('map').setView([32.0853, 34.7818], 12);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'OpenStreetMap contributors'
+        }).addTo(map);
+
+        async function loadRoute() {
+            try {
+                const response = await fetch(`/api/routes/courier/${courierId}`);
+
+                if (!response.ok) {
+                    console.error("API Error:", response.status, response.statusText);
+                    alert("Error fetching route: " + response.status);
+                    return;
+                }
+
+                const route = await response.json();
+
+                if (!route.stops || route.stops.length === 0) {
+                    console.warn("No stops found for courier", courierId);
+                    alert("No stops for this courier.");
+                    return;
+                }
+
+                let latlngs = [];
+
+                route.stops.forEach(stop => {
+                    if (stop.latitude && stop.longitude) {
+                        latlngs.push([stop.latitude, stop.longitude]);
+
+                        L.marker([stop.latitude, stop.longitude])
+                            .addTo(map)
+                            .bindPopup(`
+                             <b>Stop ${stop.order}</b><br>
+                             ${stop.dropoffAddress}
+                         `);
+                    }
+                });
+
+                L.polyline(latlngs, { weight: 5 }).addTo(map);
+                map.setView(latlngs[0], 13);
+
+            } catch (err) {
+                console.error("Fetch failed:", err);
+                alert("Failed to load route.");
+            }
+        }
+
+        loadRoute();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,115 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Courier Routes</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: Arial;
+            margin: 20px;
+        }
+
+        #map {
+            height: 600px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .courier-buttons {
+            margin-bottom: 15px;
+        }
+
+            .courier-buttons button {
+                margin: 3px;
+                padding: 5px 10px;
+            }
+    </style>
+</head>
+<body>
+    <h1>Admin - Courier Routes</h1>
+
+    <div class="courier-buttons" id="courierButtons">
+        <!-- כפתורים לכל שליח -->
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([32.0853, 34.7818], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'OpenStreetMap contributors'
+        }).addTo(map);
+
+        // שמירת הקווים והmarkers כדי למחוק לפני טעינת מסלול חדש
+        let polyline = null;
+        let markers = [];
+
+        // טעינת רשימת שליחים מה-API
+        async function loadCouriers() {
+            try {
+                const res = await fetch('/api/courier'); // צריך להחזיר JSON עם {id, name}
+                if (!res.ok) throw new Error(res.statusText);
+                const couriers = await res.json();
+
+                const container = document.getElementById('courierButtons');
+                container.innerHTML = '';
+                couriers.forEach(c => {
+                    const btn = document.createElement('button');
+                    btn.textContent = c.name;
+                    btn.addEventListener('click', () => loadRoute(c.id));
+                    container.appendChild(btn);
+                });
+
+            } catch (err) {
+                console.error("Failed to load couriers:", err);
+                alert("Failed to load couriers. See console.");
+            }
+        }
+
+        // טעינת מסלול של שליח מסוים
+        async function loadRoute(courierId) {
+            try {
+                //const res = await fetch(`/api/routes/courier/${courierId}`);
+                const res = await fetch(`/api/routes/courier/1`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const route = await res.json();
+
+                // ניקוי מסלול ישן
+                if (polyline) map.removeLayer(polyline);
+                markers.forEach(m => map.removeLayer(m));
+                markers = [];
+
+                if (!route || !route.stops || route.stops.length === 0) {
+                    alert("No route data available for this courier");
+                    return;
+                }
+
+                const latlngs = [];
+                route.stops.forEach(stop => {
+                    if (stop.lat && stop.lng) {
+                        const ll = [stop.lat, stop.lng];
+                        latlngs.push(ll);
+                        const m = L.marker(ll)
+                            .addTo(map)
+                            .bindPopup(`<b>${route.courierName}</b><br>Stop ${stop.order}: ${stop.dropoffAddress}`);
+                        markers.push(m);
+                    }
+                });
+
+                polyline = L.polyline(latlngs, { color: 'blue', weight: 4, opacity: 0.7 }).addTo(map);
+                const bounds = L.latLngBounds(latlngs);
+                map.fitBounds(bounds);
+
+            } catch (err) {
+                console.error("Failed to load courier route:", err);
+                alert("Failed to load courier route. See console for details.");
+            }
+        }
+
+        // טעינת רשימת שליחים בהתחלה
+        loadCouriers();
+    </script>
+</body>
+</html>

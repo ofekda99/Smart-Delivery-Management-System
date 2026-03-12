@@ -79,5 +79,36 @@ namespace Smart_Delivery_Management_System.Services
             return result;
         }
 
+        public async Task<CourierRouteDto?> GetCourierRouteAsync(int courierId)
+        {
+            var courier = await _courierRepo.GetById(courierId);
+
+            if (courier == null)
+                return null;
+
+            var deliveries = await _deliveryRepo.GetDeliveriesByCourier(courierId);
+
+            var orderedDeliveries = deliveries
+                .Where(d => d.RouteOrder != null)
+                .OrderBy(d => d.RouteOrder)
+                .ToList();
+
+            var stops = orderedDeliveries.Select(d => new RouteStopDto
+            {
+                DeliveryId = d.Id,
+                DropoffAddress = d.DropoffAddress,
+                Order = d.RouteOrder.Value,
+                Latitude = d.DropoffLatitude,
+                Longitude = d.DropoffLongitude
+            }).ToList();
+
+            return new CourierRouteDto
+            {
+                CourierId = courier.Id,
+                CourierName = courier.Name,
+                Stops = stops
+            };
+        }
+
     }
 }

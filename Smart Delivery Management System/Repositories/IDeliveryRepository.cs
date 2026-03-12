@@ -19,5 +19,7 @@ namespace Smart_Delivery_Management_System.Repositories
         Task<List<Delivery>> GetPendingDeliveries();
 
         Task UpdateDeliveries(List<Delivery> deliveries);
+
+        Task<List<Delivery>> GetDeliveriesByCourier(int courierId);
     }
 }

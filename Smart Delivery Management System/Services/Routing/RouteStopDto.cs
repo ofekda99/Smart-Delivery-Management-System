@@ -8,6 +8,10 @@
 
         public string DropoffAddress { get; set; }
 
+        public double Latitude { get; set; }
+
+        public double Longitude { get; set; }
+
         // Optional:
         // public string CustomerName { get; set; }
         // public double DropoffLatitude { get; set; } 

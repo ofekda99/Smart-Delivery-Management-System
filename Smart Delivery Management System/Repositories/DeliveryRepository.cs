@@ -60,5 +60,10 @@ namespace Smart_Delivery_Management_System.Repositories
             }
             await _context.SaveChangesAsync();
         }
+
+        public async Task<List<Delivery>> GetDeliveriesByCourier(int courierId)
+        {
+            return await _context.Deliveries.Where(d => d.CourierId == courierId).ToListAsync();
+        }
     }
 }

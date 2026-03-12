@@ -73,7 +73,7 @@ namespace Smart_Delivery_Management_System.Controllers
             var dropoffTask = _geocodingService.GetCoordinatesAsync(createDto.DropoffAddress);
             await Task.WhenAll(pickupTask, dropoffTask);
             var pickupCoordinates = await pickupTask;
-            var dropoffCoordinates = await pickupTask;
+            var dropoffCoordinates = await dropoffTask;
 
             var delivery = new Delivery
             {
@@ -89,8 +89,6 @@ namespace Smart_Delivery_Management_System.Controllers
             };
 
             await _repo.Add(delivery);
-
-            var pickupAddressCoordinates = await _geocodingService.GetCoordinatesAsync(createDto.PickupAddress);
 
             var dto = new DeliveryReadDto
             {

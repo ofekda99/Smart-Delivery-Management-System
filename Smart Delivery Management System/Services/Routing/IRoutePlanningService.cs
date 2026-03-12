@@ -3,5 +3,7 @@
     public interface IRoutePlanningService
     {
         public Task<List<CourierRouteDto>> PlanRoutesAsync();
+
+        Task<CourierRouteDto?> GetCourierRouteAsync(int courierId);
     }
 }
