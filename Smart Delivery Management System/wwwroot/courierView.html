@@ -19,7 +19,7 @@
         body, html {
             height: 100%;
             margin: 0;
-            overflow: hidden; /* מונע גלילה של כל הדף */
+            overflow: hidden;
             background-color: #f1f3f5;
             font-family: 'Segoe UI', system-ui;
         }
@@ -30,7 +30,6 @@
             width: 100vw;
         }
 
-        /* סיידבר ימני לרשימת התחנות */
         .sidebar {
             width: var(--sidebar-width);
             background: white;
@@ -54,7 +53,6 @@
             padding: 15px;
         }
 
-        /* מפה שתופסת את כל השאר */
         #map-container {
             flex-grow: 1;
             position: relative;
@@ -65,7 +63,6 @@
             width: 100%;
         }
 
-        /* עיצוב כרטיס תחנה */
         .stop-card {
             background: #fff;
             border: 1px solid #e9ecef;
@@ -117,7 +114,6 @@
                 background-color: #29bceb;
             }
 
-        /* כפתור ציפה לזום מסלול מלא */
         .map-overlay-tools {
             position: absolute;
             top: 20px;
@@ -165,29 +161,55 @@
         let polylineLayer = L.layerGroup().addTo(map);
         let currentRouteBounds = null;
 
-        function getCourierIdFromUrl() {
-            return new URLSearchParams(window.location.search).get('id');
+        function getToken() {
+            return localStorage.getItem('userToken');
         }
 
         async function init() {
-            const id = getCourierIdFromUrl();
-            if (!id) {
-                document.getElementById('stops-list').innerHTML = '<div class="alert alert-danger">לא נמצא מזהה שליח בכתובת</div>';
+            const token = getToken();
+
+            if (!token) {
+                window.location.href = 'login.html';
                 return;
             }
 
             try {
-                const res = await fetch(`${API_BASE}/Routes/courier/${id}`);
-                if (!res.ok) throw new Error();
+                const res = await fetch(`${API_BASE}/Routes/courier/my-route`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                // אם אין מסלול (404) או אין הרשאה (403/401)
+                if (res.status === 404) {
+                    document.getElementById('stops-list').innerHTML = `
+                <div class="text-center py-5">
+                    <i class="bi bi-box-seam display-1 text-muted"></i>
+                    <p class="mt-3 fw-bold">אין לך משלוחים פעילים כרגע.</p>
+                </div>`;
+                    document.getElementById('stop-count').innerText = "0 תחנות";
+                    return;
+                }
+
+                if (!res.ok) throw new Error("שגיאה בטעינת הנתונים");
+
                 const data = await res.json();
 
-                document.getElementById('courier-display-name').innerText = data.courierName || "שליח פעיל";
                 const stops = data.stops || data.Stops || [];
+                document.getElementById('courier-display-name').innerText = data.courierName || "שליח פעיל";
                 document.getElementById('stop-count').innerText = `${stops.length} תחנות לביצוע`;
 
-                renderInterface(stops);
+                if (stops.length > 0) {
+                    renderInterface(stops);
+                } else {
+                    document.getElementById('stops-list').innerHTML = '<div class="alert alert-info">המסלול שלך ריק.</div>';
+                }
+
             } catch (e) {
-                document.getElementById('stops-list').innerHTML = '<div class="alert alert-warning">אין מסלול פעיל כרגע</div>';
+                console.error(e);
+                document.getElementById('stops-list').innerHTML = `<div class="alert alert-danger">תקלה בתקשורת עם השרת. וודא שאתה מחובר.</div>`;
             }
         }
 
@@ -199,13 +221,12 @@
             stops.forEach((stop, index) => {
                 const lat = stop.latitude || stop.Latitude;
                 const lng = stop.longitude || stop.Longitude;
-                const address = stop.address || stop.Address || stop.dropoffAddress || "כתובת לא ידועה";
+                const address = stop.address || stop.Address || stop.dropoffAddress || stop.dropOffAddress || "כתובת לא ידועה";
+
                 const pos = [lat, lng];
                 points.push(pos);
-
                 const isOrigin = index === 0;
 
-                // יצירת כרטיס בסיידבר
                 list.innerHTML += `
                     <div class="stop-card ${isOrigin ? 'origin' : ''}">
                         <div class="d-flex align-items-center mb-2">
@@ -220,14 +241,9 @@
                             <button class="btn btn-sm btn-outline-secondary" onclick="map.flyTo([${lat}, ${lng}], 16)">
                                 <i class="bi bi-geo-alt"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-success" onclick="markDone(this)">
-                                <i class="bi bi-check"></i>
-                            </button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
 
-                // הוספת מרקר למפה
                 const markerColor = isOrigin ? '#198754' : '#3498db';
                 const icon = L.divIcon({
                     html: `<div style="background:${markerColor}; width:12px; height:12px; border-radius:50%; border:2px solid white;"></div>`,
@@ -245,13 +261,6 @@
 
         function zoomToFullRoute() {
             if (currentRouteBounds) map.flyToBounds(currentRouteBounds, { padding: [50, 50] });
-        }
-
-        function markDone(btn) {
-            const card = btn.closest('.stop-card');
-            card.style.opacity = '0.4';
-            card.style.pointerEvents = 'none';
-            btn.disabled = true;
         }
 
         init();

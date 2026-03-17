@@ -37,6 +37,12 @@ namespace Smart_Delivery_Management_System.Repositories
         public async Task<Courier> GetById(int id)
         {
             return await _context.Couriers.FindAsync(id);
+            // return await _context.Couriers.FirstOrDefaultAsync(c=> c.UserId == id);
+        }
+
+        public async Task<Courier> GetCourier(int userId)
+        {
+            return await _context.Couriers.FirstOrDefaultAsync(c => c.UserId == userId);
         }
 
         public async Task Update(Courier courier)
@@ -55,7 +61,7 @@ namespace Smart_Delivery_Management_System.Repositories
 
         public async Task<List<Courier>> GetAvailableCouriers()
         {
-            return await _context.Couriers.Where(c=> c.IsAvailable).ToListAsync();
+            return await _context.Couriers.Where(c => c.IsAvailable).ToListAsync();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Smart_Delivery_Management_System.DTOs.CourierDto;
 using Smart_Delivery_Management_System.Models;
@@ -6,6 +7,7 @@ using Smart_Delivery_Management_System.Repositories;
 
 namespace Smart_Delivery_Management_System.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class CourierController : ControllerBase

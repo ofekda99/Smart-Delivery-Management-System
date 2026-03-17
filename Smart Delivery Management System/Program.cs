@@ -1,14 +1,17 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Smart_Delivery_Management_System.Data;
+using Smart_Delivery_Management_System.JWT;
 using Smart_Delivery_Management_System.Models;
 using Smart_Delivery_Management_System.Repositories;
 using Smart_Delivery_Management_System.Services;
 using Smart_Delivery_Management_System.Services.Routing;
 using System;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. הוסף את השירות
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -30,6 +33,7 @@ builder.Services.AddScoped<ICourierAssignmentService, CourierAssignmentService>(
 builder.Services.AddScoped<IRouteOptimizationService, NearestNeighborRouteService>();
 builder.Services.AddScoped<IRoutePlanningService, RoutePlanningService>();
 builder.Services.AddHttpClient<IGeocodingService, NominatimService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 builder.Services.Configure<DeliverySetting>(
     builder.Configuration.GetSection("DeliverySettings"));
@@ -39,7 +43,18 @@ builder.Services.AddDbContext<DeliveryDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true, 
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["TokenKey"])),
+            ValidateIssuer = false, 
+            ValidateAudience = false,
+            RoleClaimType = System.Security.Claims.ClaimTypes.Role
+        };
+    });
 
 var app = builder.Build();
 
@@ -53,9 +68,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 
-app.UseHttpsRedirection();
+app.UseAuthentication();
 
 app.UseAuthorization();
 

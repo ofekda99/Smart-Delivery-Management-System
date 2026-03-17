@@ -17,5 +17,7 @@ namespace Smart_Delivery_Management_System.Repositories
         Task<bool> HasActiveDeliveries(int deliveryId);
 
         Task<List<Courier>> GetAvailableCouriers();
+
+        Task<Courier> GetCourier(int userId);
     }
 }

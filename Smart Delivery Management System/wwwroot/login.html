@@ -67,14 +67,15 @@
                         if (response.ok) {
                             const data = await response.json();
 
-                            // שמירת נתונים לשימוש בדפים הבאים
                             localStorage.setItem('userId', data.id);
                             localStorage.setItem('userRole', data.role);
                             localStorage.setItem('userName', data.fullName);
+                            localStorage.setItem('userToken', data.token);
+                            localStorage.setItem('userRole', data.role); // indicates whether the user is Admin or Courier
 
                             // Route by the user role
                             if (data.role === 'Admin') {
-                                window.location.href = 'index.html';
+                                window.location.href = 'admin.html';
                             } else if (data.role === 'Courier') {
                                 window.location.href = `courierView.html?id=${data.id}`;
                             } else {

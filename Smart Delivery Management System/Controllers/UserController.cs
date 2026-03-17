@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Smart_Delivery_Management_System.DTOs.UserDto;
 using Smart_Delivery_Management_System.Repositories;
 using Smart_Delivery_Management_System.Models;
+using Smart_Delivery_Management_System.JWT;
 
 namespace Smart_Delivery_Management_System.Controllers
 {
@@ -11,17 +12,21 @@ namespace Smart_Delivery_Management_System.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IUserRepository _repo;
+        private readonly IUserRepository _userRepo;
+        private readonly ICourierRepository _courierRepo;
+        private readonly ITokenService _tokenService;
 
-        public UserController(IUserRepository repo)
+        public UserController(IUserRepository userRepo, ICourierRepository courierRepo, ITokenService tokenService)
         {
-            _repo = repo;
+            _userRepo = userRepo;
+            _courierRepo = courierRepo;
+            _tokenService = tokenService;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var users = await _repo.GetAll();
+            var users = await _userRepo.GetAll();
 
             var usersDto = users.Select(u => new UserReadDto
             {
@@ -36,7 +41,7 @@ namespace Smart_Delivery_Management_System.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var user = await _repo.GetById(id);
+            var user = await _userRepo.GetById(id);
 
             if (user == null)
             {
@@ -69,7 +74,19 @@ namespace Smart_Delivery_Management_System.Controllers
                 Role = "Courier" // Default role, can be changed to accept from DTO if needed
             };
 
-            await _repo.Add(userToCreate, createUserDto.Password);
+            await _userRepo.Add(userToCreate, createUserDto.Password);
+
+            if (userToCreate.Role == "Courier")
+            {
+                var newCourier = new Courier
+                {
+                    Name = userToCreate.FullName,
+                    UserId = userToCreate.Id,
+                    IsAvailable = true,
+                };
+
+                await _courierRepo.Add(newCourier);
+            }
 
             var userReadDto = new UserReadDto
             {
@@ -90,7 +107,7 @@ namespace Smart_Delivery_Management_System.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = await _repo.GetById(id);
+            var user = await _userRepo.GetById(id);
 
             if (user == null)
             {
@@ -103,7 +120,7 @@ namespace Smart_Delivery_Management_System.Controllers
             if (!string.IsNullOrEmpty(userUpdateDto.Password))
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userUpdateDto.Password);
 
-            await _repo.Update(user);
+            await _userRepo.Update(user);
 
             var userReadDto = new UserReadDto
             {
@@ -119,7 +136,7 @@ namespace Smart_Delivery_Management_System.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var user = await _repo.GetById(id);
+            var user = await _userRepo.GetById(id);
 
             if (user == null)
             {
@@ -134,7 +151,7 @@ namespace Smart_Delivery_Management_System.Controllers
             //    return BadRequest("Cannot delete user with associated couriers or deliveries.");
             //}
 
-            await _repo.Delete(id); // Soft deleting
+            await _userRepo.Delete(id); // Soft deleting
 
             return NoContent();
         }
@@ -142,7 +159,7 @@ namespace Smart_Delivery_Management_System.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDto loginDto)
         {
-            var user = await _repo.GetByEmail(loginDto.Email);
+            var user = await _userRepo.GetByEmail(loginDto.Email);
 
             if (user == null)
             {
@@ -156,11 +173,14 @@ namespace Smart_Delivery_Management_System.Controllers
                 return Unauthorized(new { message = "אימייל או סיסמה שגויים" });
             }
 
+            var token = _tokenService.CreateToken(user);
+
             return Ok(new
             {
                 id = user.Id,
                 fullName = user.FullName,
-                role = user.Role // "Admin" or "Courier"
+                role = user.Role, // "Admin" or "Courier"
+                token = token
             });
         }
     }
