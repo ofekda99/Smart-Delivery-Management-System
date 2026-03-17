@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Smart_Delivery_Management_System.DTOs.DeliveryDto;
 using Smart_Delivery_Management_System.Models;
@@ -19,6 +20,7 @@ namespace Smart_Delivery_Management_System.Controllers
             _geocodingService = geocodingService;
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {

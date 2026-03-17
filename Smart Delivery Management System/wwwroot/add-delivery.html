@@ -1,0 +1,395 @@
+﻿<!--OLD PAGE - NOT IN USE ANYMORE, KEPT FOR REFERENCE ONLY, REPLACED BY panel-managment.HTML PAGE->
+<!--<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ניהול משלוחים - Smart Delivery</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .admin-container {
+            max-width: 1240px;
+            margin: 30px auto;
+        }
+
+        .card {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .table-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        /* Design statusses */
+        .status-pending {
+            color: #fd7e14;
+            background: #fff4e6;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .status-intransit {
+            color: #0d6efd;
+            background: #e7f1ff;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .status-delivered {
+            color: #198754;
+            background: #e6f4ea;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .status-cancelled {
+            color: #dc3545;
+            background: #fde8e8;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: line-through;
+        }
+
+        .modal-content {
+            overflow: visible;
+        }
+
+        datalist {
+            position: absolute;
+            z-index: 9999 !important;
+        }
+
+        .table thead th {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            border-bottom: 2px solid #edf2f7;
+        }
+
+        .btn-action {
+            transition: all 0.2s;
+        }
+
+            .btn-action:hover {
+                transform: translateY(-2px);
+            }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-dark bg-dark mb-4 shadow-sm">
+        <div class="container">
+            <span class="navbar-brand fw-bold"> Smart Delivery | ניהול לוגיסטי</span>
+            <div class="d-flex align-items-center">
+                <span id="adminName" class="text-white-50 me-3 small">מחובר כמנהל</span>
+                <button class="btn btn-outline-danger btn-sm" onclick="logout()">התנתק</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container admin-container">
+
+        <div class="card mb-4">
+            <div class="card-header bg-white py-3"><h6 class="mb-0 fw-bold">➕ יצירת משלוח חדש</h6></div>
+            <div class="card-body">
+                <form id="deliveryForm" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">נקודת איסוף</label>
+                        <input type="text" id="pickupAddress" class="form-control" list="pickupList" placeholder="רחוב, עיר..." required autocomplete="off">
+                        <datalist id="pickupList"></datalist>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">נקודת יעד</label>
+                        <input type="text" id="dropoffAddress" class="form-control" list="dropoffList" placeholder="לאן לשלוח?" required autocomplete="off">
+                        <datalist id="dropoffList"></datalist>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">שליח</label>
+                        <select id="courierId" class="form-select" required><option value="">טוען...</option></select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100 fw-bold">צור משלוח</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mb-4 bg-white border-0">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">🔍</span>
+                            <input type="text" id="searchFilter" class="form-control border-start-0"
+                                   placeholder="חפש לפי כתובת..." oninput="applyFilters()">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select id="statusFilter" class="form-select" onchange="applyFilters()">
+                            <option value="">כל הסטטוסים</option>
+                            <option value="Pending">🕒 Pending</option>
+                            <option value="InTransit">🚚 InTransit</option>
+                            <option value="Delivered">✅ Delivered</option>
+                            <option value="Cancelled">❌ Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-outline-secondary w-100" onclick="toggleSort()">
+                            <span id="sortText">מיין לפי מזהה (חדש-ישן)</span> <span id="sortIcon">🔽</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container shadow-sm">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">מזהה</th>
+                        <th>איסוף</th>
+                        <th>יעד</th>
+                        <th>שליח</th>
+                        <th>סטטוס</th>
+                        <th class="text-center">פעולות</th>
+                    </tr>
+                </thead>
+                <tbody id="deliveriesTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form id="editForm" class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold">🛠️ עריכת משלוח מס' <span id="displayId"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="editId">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">כתובת איסוף (עריכה)</label>
+                        <input type="text" id="editPickup" class="form-control" list="editPickupList" autocomplete="off">
+                        <datalist id="editPickupList"></datalist>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">כתובת יעד (עריכה)</label>
+                        <input type="text" id="editDropoff" class="form-control" list="editDropoffList" autocomplete="off">
+                        <datalist id="editDropoffList"></datalist>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">שנה שליח</label>
+                            <select id="editCourier" class="form-select"></select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">סטטוס</label>
+                            <select id="editStatus" class="form-select">
+                                <option value="Pending">Pending</option>
+                                <option value="InTransit">InTransit</option>
+                                <option value="Delivered">Delivered</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ביטול</button>
+                    <button type="submit" class="btn btn-primary px-4">שמור שינויים</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const token = localStorage.getItem('userToken');
+        let allDeliveries = [];
+        let isAsc = false;
+
+        // אבטחה
+        if (!token) window.location.href = 'login.html';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAdmin();
+            fetchCouriers();
+            loadDeliveries();
+
+            // setupAutocomplete for Main form
+            setupAutocomplete('pickupAddress', 'pickupList');
+            setupAutocomplete('dropoffAddress', 'dropoffList');
+
+            // setupAutocomplete for update mode form
+            setupAutocomplete('editPickup', 'editPickupList');
+            setupAutocomplete('editDropoff', 'editDropoffList');
+
+            setupFormSubmission();
+        });
+
+        function checkAdmin() {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const role = payload["role"] || payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+                if (role !== 'Admin') { alert("גישה למנהלים בלבד!"); window.location.href = 'index.html'; }
+            } catch (e) { logout(); }
+        }
+
+        async function loadDeliveries() {
+            try {
+                const res = await fetch('/api/Delivery', { headers: { 'Authorization': `Bearer ${token}` } });
+                allDeliveries = await res.json();
+                applyFilters();
+            } catch (err) { console.error("Load Error:", err); }
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('deliveriesTableBody');
+            tbody.innerHTML = '';
+            data.forEach(d => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="fw-bold">#${d.id}</td>
+                        <td class="small text-muted">${d.pickupAddress}</td>
+                        <td class="small text-muted">${d.dropoffAddress}</td>
+                        <td><span class="badge bg-light text-dark">🆔 ${d.courierId || 'N/A'}</span></td>
+                        <td><span class="status-${(d.status || '').toLowerCase()}">${d.status}</span></td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-primary btn-action me-1" onclick='openEditModal(${JSON.stringify(d)})'>ערוך</button>
+                            <button class="btn btn-sm btn-outline-danger btn-action" onclick="deleteDelivery(${d.id})">מחק</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('searchFilter').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const filtered = allDeliveries.filter(d =>
+                (!status || d.status === status) &&
+                (!search || d.pickupAddress.toLowerCase().includes(search) || d.dropoffAddress.toLowerCase().includes(search))
+            );
+            renderTable(filtered);
+        }
+
+        function toggleSort() {
+            isAsc = !isAsc;
+            document.getElementById('sortIcon').innerText = isAsc ? '🔼' : '🔽';
+            allDeliveries.sort((a, b) => isAsc ? a.id - b.id : b.id - a.id);
+            applyFilters();
+        }
+
+        function setupAutocomplete(inputId, listId) {
+            const input = document.getElementById(inputId);
+            const list = document.getElementById(listId);
+            let timeout;
+
+            input.addEventListener('input', () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(async () => {
+                    const query = input.value;
+                    if (query.length < 3) return;
+                    try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&countrycodes=il&accept-language=he`);
+                        const data = await res.json();
+                        list.innerHTML = '';
+                        data.forEach(item => {
+                            const a = item.address;
+                            const clean = `${a.road || ''} ${a.house_number || ''}, ${a.city || a.town || ''}`.replace(/^ ,/, '').trim();
+                            const opt = document.createElement('option');
+                            opt.value = clean || item.display_name.split(',')[0];
+                            list.appendChild(opt);
+                        });
+                    } catch (e) { console.error(e); }
+                }, 300);
+            });
+        }
+
+        async function fetchCouriers() {
+            const res = await fetch('/api/Courier', { headers: { 'Authorization': `Bearer ${token}` } });
+            const couriers = await res.json();
+            const selects = [document.getElementById('courierId'), document.getElementById('editCourier')];
+            selects.forEach(s => {
+                s.innerHTML = '<option value="">בחר שליח</option>';
+                couriers.forEach(c => s.innerHTML += `<option value="${c.id}">${c.name || c.id}</option>`);
+            });
+        }
+
+        function setupFormSubmission() {
+            document.getElementById('deliveryForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const payload = {
+                    pickupAddress: document.getElementById('pickupAddress').value,
+                    dropoffAddress: document.getElementById('dropoffAddress').value,
+                    courierId: parseInt(document.getElementById('courierId').value),
+                    status: "Pending"
+                };
+                const res = await fetch('/api/Delivery', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) { alert("משלוח נוצר בהצלחה!"); loadDeliveries(); e.target.reset(); }
+            });
+        }
+
+        function openEditModal(d) {
+            document.getElementById('editId').value = d.id;
+            document.getElementById('displayId').innerText = d.id;
+            document.getElementById('editPickup').value = d.pickupAddress;
+            document.getElementById('editDropoff').value = d.dropoffAddress;
+            document.getElementById('editStatus').value = d.status;
+            document.getElementById('editCourier').value = d.courierId || "";
+            new bootstrap.Modal(document.getElementById('editModal')).show();
+        }
+
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editId').value;
+            const payload = {
+                id: parseInt(id),
+                pickupAddress: document.getElementById('editPickup').value,
+                dropoffAddress: document.getElementById('editDropoff').value,
+                status: document.getElementById('editStatus').value,
+                courierId: parseInt(document.getElementById('editCourier').value)
+            };
+            const res = await fetch(`/api/Delivery/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+                loadDeliveries();
+            }
+        });
+
+        async function deleteDelivery(id) {
+            if (confirm("בטוח שברצונך למחוק משלוח זה?")) {
+                await fetch(`/api/Delivery/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                loadDeliveries();
+            }
+        }
+
+        function logout() { localStorage.removeItem('userToken'); window.location.href = 'login.html'; }
+    </script>
+</body>
+</html>-->
