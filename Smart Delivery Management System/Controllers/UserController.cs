@@ -82,6 +82,7 @@ namespace Smart_Delivery_Management_System.Controllers
                 {
                     Name = userToCreate.FullName,
                     UserId = userToCreate.Id,
+                    PhoneNumber = createUserDto.PhoneNumber,
                     IsAvailable = true,
                 };
 
