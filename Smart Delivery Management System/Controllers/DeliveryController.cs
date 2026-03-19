@@ -71,7 +71,7 @@ namespace Smart_Delivery_Management_System.Controllers
                 return BadRequest(ModelState);
             }
 
-            var pickupTask = _geocodingService.GetCoordinatesAsync(createDto.PickupAddress); 
+            var pickupTask = _geocodingService.GetCoordinatesAsync(createDto.PickupAddress);
             var dropoffTask = _geocodingService.GetCoordinatesAsync(createDto.DropoffAddress);
             await Task.WhenAll(pickupTask, dropoffTask);
             var pickupCoordinates = await pickupTask;
@@ -155,6 +155,28 @@ namespace Smart_Delivery_Management_System.Controllers
             await _repo.Delete(id);
             return NoContent();
             // return Ok(new { message = "Delivery deleted successfully." });
+        }
+
+        [Authorize(Roles = "Courier")]
+        [HttpPatch("{id}/status")]
+        public async Task<IActionResult> UpdateStatus(int id, [FromBody] string newStatus)
+        {
+            var delivery = await _repo.GetById(id);
+
+            if (delivery == null)
+            {
+                return NotFound("המשלוח לא נמצא");
+            }
+
+            delivery.Status = newStatus;
+            if (newStatus == "Delivered")
+            {
+                delivery.DeliveredAt = DateTime.Now;
+            }
+
+            await _repo.Update(delivery);
+
+            return Ok(new { message = "סטטוס המשלוח עודכן בהצלחה", deliveryId = id, status = newStatus });
         }
     }
 }
