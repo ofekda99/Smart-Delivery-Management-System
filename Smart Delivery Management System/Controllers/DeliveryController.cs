@@ -20,7 +20,7 @@ namespace Smart_Delivery_Management_System.Controllers
             _geocodingService = geocodingService;
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -157,7 +157,7 @@ namespace Smart_Delivery_Management_System.Controllers
             // return Ok(new { message = "Delivery deleted successfully." });
         }
 
-        [Authorize(Roles = "Courier")]
+        //[Authorize(Roles = "Courier")]
         [HttpPatch("{id}/status")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] string newStatus)
         {
