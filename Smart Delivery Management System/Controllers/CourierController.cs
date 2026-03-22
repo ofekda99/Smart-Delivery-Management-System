@@ -7,7 +7,7 @@ using Smart_Delivery_Management_System.Repositories;
 
 namespace Smart_Delivery_Management_System.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class CourierController : ControllerBase

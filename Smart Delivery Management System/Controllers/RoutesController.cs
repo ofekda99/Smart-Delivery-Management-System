@@ -5,7 +5,7 @@ using Smart_Delivery_Management_System.Services.Routing;
 
 namespace Smart_Delivery_Management_System.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class RoutesController : ControllerBase
@@ -19,7 +19,7 @@ namespace Smart_Delivery_Management_System.Controllers
             _courierRepo = courierRepo;
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpGet("courier/{courierId}")]
         public async Task<IActionResult> GetCourierRoute(int courierId)
         {
