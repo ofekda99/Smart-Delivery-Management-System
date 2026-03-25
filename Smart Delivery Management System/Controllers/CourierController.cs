@@ -1,137 +1,137 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Smart_Delivery_Management_System.DTOs.CourierDto;
-using Smart_Delivery_Management_System.Models;
-using Smart_Delivery_Management_System.Repositories;
+﻿    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
+    using Smart_Delivery_Management_System.DTOs.CourierDto;
+    using Smart_Delivery_Management_System.Models;
+    using Smart_Delivery_Management_System.Repositories;
 
-namespace Smart_Delivery_Management_System.Controllers
-{
-    //[Authorize(Roles = "Admin")]
-    [Route("api/[controller]")]
-    [ApiController]
-    public class CourierController : ControllerBase
+    namespace Smart_Delivery_Management_System.Controllers
     {
-        private readonly ICourierRepository _repo;
-
-        public CourierController(ICourierRepository repo)
+        //[Authorize(Roles = "Admin")]
+        [Route("api/[controller]")]
+        [ApiController]
+        public class CourierController : ControllerBase
         {
-            _repo = repo;
-        }
+            private readonly ICourierRepository _repo;
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var couriers = await _repo.GetAll();
-            var couriersDto = couriers.Select(c => new CourierReadDto
+            public CourierController(ICourierRepository repo)
             {
-                Id = c.Id,
-                Name = c.Name,
-                PhoneNumber = c.PhoneNumber,
-                IsAvailable = c.IsAvailable
-            }).ToList();
-
-            return Ok(couriersDto);
-        }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
-        {
-            var courier = await _repo.GetById(id);
-
-            if (courier == null)
-            {
-                return NotFound();
+                _repo = repo;
             }
 
-            var courierDto = new CourierReadDto
+            [HttpGet]
+            public async Task<IActionResult> GetAll()
             {
-                Id = courier.Id,
-                Name = courier.Name,
-                PhoneNumber = courier.PhoneNumber,
-                IsAvailable = courier.IsAvailable
-            };
+                var couriers = await _repo.GetAll();
+                var couriersDto = couriers.Select(c => new CourierReadDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    PhoneNumber = c.PhoneNumber,
+                    IsAvailable = c.IsAvailable
+                }).ToList();
 
-            return Ok(courierDto);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Create(CourierCreateDto createDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
+                return Ok(couriersDto);
             }
 
-            var courier = new Courier
+            [HttpGet("{id}")]
+            public async Task<IActionResult> GetById(int id)
             {
-                Name = createDto.Name,
-                PhoneNumber = createDto.PhoneNumber,
-                IsAvailable = createDto.IsAvailable
-            };
+                var courier = await _repo.GetById(id);
 
-            await _repo.Add(courier);
+                if (courier == null)
+                {
+                    return NotFound();
+                }
 
-            var readDto = new CourierReadDto
-            {
-                Id = courier.Id,
-                Name = courier.Name,
-                PhoneNumber = courier.PhoneNumber,
-                IsAvailable = courier.IsAvailable
-            };
+                var courierDto = new CourierReadDto
+                {
+                    Id = courier.Id,
+                    Name = courier.Name,
+                    PhoneNumber = courier.PhoneNumber,
+                    IsAvailable = courier.IsAvailable
+                };
 
-            return CreatedAtAction(nameof(GetById), new { id = courier.Id }, readDto);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, CourierUpdateDto updateDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
+                return Ok(courierDto);
             }
 
-            var courier = await _repo.GetById(id);
-
-            if (courier == null)
+            [HttpPost]
+            public async Task<IActionResult> Create(CourierCreateDto createDto)
             {
-                return NotFound();
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var courier = new Courier
+                {
+                    Name = createDto.Name,
+                    PhoneNumber = createDto.PhoneNumber,
+                    IsAvailable = createDto.IsAvailable
+                };
+
+                await _repo.Add(courier);
+
+                var readDto = new CourierReadDto
+                {
+                    Id = courier.Id,
+                    Name = courier.Name,
+                    PhoneNumber = courier.PhoneNumber,
+                    IsAvailable = courier.IsAvailable
+                };
+
+                return CreatedAtAction(nameof(GetById), new { id = courier.Id }, readDto);
             }
 
-            courier.Name = updateDto.Name;
-            courier.PhoneNumber = updateDto.PhoneNumber;
-            courier.IsAvailable = updateDto.IsAvailable;
-
-            await _repo.Update(courier);
-
-            var readDto = new CourierReadDto
+            [HttpPut("{id}")]
+            public async Task<IActionResult> Update(int id, CourierUpdateDto updateDto)
             {
-                Id = courier.Id,
-                Name = courier.Name,
-                PhoneNumber = courier.PhoneNumber,
-                IsAvailable = courier.IsAvailable
-            };
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
-            return Ok(readDto);
-        }
+                var courier = await _repo.GetById(id);
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var courier = await _repo.GetById(id);
+                if (courier == null)
+                {
+                    return NotFound();
+                }
 
-            if (courier == null)
-            {
-                return NotFound(new { error = "Courier not found." });
+                courier.Name = updateDto.Name;
+                courier.PhoneNumber = updateDto.PhoneNumber;
+                courier.IsAvailable = updateDto.IsAvailable;
+
+                await _repo.Update(courier);
+
+                var readDto = new CourierReadDto
+                {
+                    Id = courier.Id,
+                    Name = courier.Name,
+                    PhoneNumber = courier.PhoneNumber,
+                    IsAvailable = courier.IsAvailable
+                };
+
+                return Ok(readDto);
             }
 
-            if(await _repo.HasActiveDeliveries(id))
+            [HttpDelete("{id}")]
+            public async Task<IActionResult> Delete(int id)
             {
-                return BadRequest(new { error = "Cannot delete courier with active deliveries." });
-            }
+                var courier = await _repo.GetById(id);
 
-            await _repo.Delete(id); // Soft deleting
-            return NoContent();
+                if (courier == null)
+                {
+                    return NotFound(new { error = "Courier not found." });
+                }
+
+                if(await _repo.HasActiveDeliveries(id))
+                {
+                    return BadRequest(new { error = "Cannot delete courier with active deliveries." });
+                }
+
+                await _repo.Delete(id); // Soft deleting
+                return NoContent();
+            }
         }
     }
-}
