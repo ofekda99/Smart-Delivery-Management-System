@@ -1,13 +1,16 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+# שורה 1 - נחליף ל-10.0
+FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS build
 WORKDIR /src
-# תחליף את Smart Delivery Management System.csproj בשם המדויק של הקובץ שלך
-COPY ["Smart Delivery Management System.csproj", "."]
-RUN dotnet restore "./Smart Delivery Management System.csproj"
-COPY . .
-RUN dotnet publish "Smart Delivery Management System.csproj" -c Release -o /app/publish
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+COPY *.csproj ./
+RUN dotnet restore
+
+COPY . .
+RUN dotnet publish -c Release -o /app/publish
+
+# שורה של ה-final - גם כאן נחליף ל-10.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-# תחליף את Smart Delivery Management System.dll בשם המדויק של ה-DLL שלך
+
 ENTRYPOINT ["dotnet", "Smart Delivery Management System.dll"]
