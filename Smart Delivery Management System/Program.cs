@@ -7,6 +7,7 @@ using Smart_Delivery_Management_System.JWT;
 using Smart_Delivery_Management_System.Models;
 using Smart_Delivery_Management_System.Repositories;
 using Smart_Delivery_Management_System.Services;
+using Smart_Delivery_Management_System.Services.AI;
 using Smart_Delivery_Management_System.Services.Routing;
 using System;
 using System.Text;
@@ -36,6 +37,8 @@ builder.Services.AddScoped<IRouteOptimizationService, NearestNeighborRouteServic
 builder.Services.AddScoped<IRoutePlanningService, RoutePlanningService>();
 builder.Services.AddHttpClient<IGeocodingService, NominatimService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IAIService, GeminiAIService>();
+builder.Services.AddScoped<IAIOperationExecutor, AIOperationExecutor>();
 
 builder.Services.Configure<DeliverySetting>(
     builder.Configuration.GetSection("DeliverySettings"));
