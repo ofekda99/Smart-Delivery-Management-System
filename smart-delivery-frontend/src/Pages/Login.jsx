@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Box, RefreshCw, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const API_BASE = 'https://localhost:44333/api';
+//const API_BASE = 'https://localhost:44333/api';
+const API_BASE = 'https://smart-delivery-management-system-t6lh.onrender.com/api';
 
 function Login() {
   const [email, setEmail] = useState('');

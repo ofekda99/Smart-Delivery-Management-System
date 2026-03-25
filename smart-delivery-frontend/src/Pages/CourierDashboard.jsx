@@ -20,7 +20,8 @@ const stopIcon = (num) => L.divIcon({
   iconSize: [26, 26], iconAnchor: [13, 13]
 });
 
-const API_BASE = 'https://localhost:44333/api';
+//const API_BASE = 'https://localhost:44333/api';
+const API_BASE = 'https://smart-delivery-management-system-t6lh.onrender.com/api';
 
 function MapController({ points, focusPoint, resetTrigger }) {
   const map = useMap();

@@ -6,7 +6,8 @@ import {
   RefreshCw, SearchX, Loader2, ArrowUpCircle, ArrowDownCircle
 } from 'lucide-react';
 
-const API_URL = 'https://localhost:44333/api/Delivery';
+//const API_URL = 'https://localhost:44333/api/Delivery';
+const API_URL = 'https://smart-delivery-management-system-t6lh.onrender.com/api/Delivery';
 
 const getCleanAddress = (item) => {
   if (!item) return { title: '', subtitle: '' };

@@ -256,7 +256,8 @@ const runTypingEffect = (fullText) => {
     setIsLoading(true);
 
     try {
-        const response = await axios.post('https://localhost:44333/api/AI/ask', { message: textToSend });
+        //const response = await axios.post('https://localhost:44333/api/AI/ask', { message: textToSend });
+        const response = await axios.post('https://smart-delivery-management-system-t6lh.onrender.com/api/AI/ask', { message: textToSend });
         const { answer, actionExecuted } = response.data;
         // 2. בדיקה קריטית: האם התשובה בפורמט הנכון?
         if (answer) {

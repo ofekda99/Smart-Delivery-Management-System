@@ -25,7 +25,8 @@ const createNumberIcon = (number) => L.divIcon({
   iconSize: [24, 24], iconAnchor: [12, 12]
 });
 
-const API_BASE = 'https://localhost:44333/api';
+//const API_BASE = 'https://localhost:44333/api';
+const API_BASE = 'https://smart-delivery-management-system-t6lh.onrender.com/api';
 
 function MapController({ focusPoint }) {
   const map = useMap();
