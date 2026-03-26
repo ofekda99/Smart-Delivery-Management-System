@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { LogOut, Box, Map as MapIcon, ClipboardList, User, Package2Icon, PackageIcon, BikeIcon } from 'lucide-react';
 
-const Navbar = () => {
+const NavBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const role = localStorage.getItem('userRole'); // 'Admin' or 'Courier'
@@ -68,4 +68,4 @@ const styles = {
   logoutBtn: { background: 'none', border: '1px solid #334155', color: '#f87171', padding: '8px 15px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }
 };
 
-export default Navbar;
+export default NavBar;
