@@ -90,7 +90,7 @@ import { Toaster } from 'react-hot-toast';
 
 // import customized components
 //import NavBar from './Components/NavBar';
-import Navbar from './Components/navbar';
+import NavBar from './Components/navbar';
 import ProtectedRoute from './Components/ProtectedRoute';
 
 // import pages
