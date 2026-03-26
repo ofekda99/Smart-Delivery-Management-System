@@ -8,8 +8,9 @@ import toast from 'react-hot-toast';
 const API_BASE = 'https://smart-delivery-management-system-t6lh.onrender.com/api';
 
 function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // ערכי דמו מוכנים מראש לנוחות המגייס
+  const [email, setEmail] = useState('admin@gmail.com');
+  const [password, setPassword] = useState('admin');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ function Login() {
 
   return (
     <div style={styles.container}>
-      {/* אלמנטים דקורטיביים ברקע (עיגולי אור) */}
+      {/* אלמנטים דקורטיביים ברקע */}
       <div style={styles.bgGlow1}></div>
       <div style={styles.bgGlow2}></div>
 
@@ -95,6 +96,15 @@ function Login() {
             </div>
           </div>
 
+          {/* תיבת פרטי דמו - מעוצבת ומתוקנת מבחינת שפה */}
+          <div style={styles.demoBox}>
+            <p style={styles.demoTitle}>כניסת דמו להתנסות במערכת:</p>
+            <div style={styles.demoDetails}>
+              <span>מייל: <b dir="ltr">admin@gmail.com</b></span>
+              <span style={{marginRight: '12px'}}>סיסמה: <b dir="ltr">admin</b></span>
+            </div>
+          </div>
+
           <button type="submit" disabled={loading} style={styles.submitBtn}>
             {loading ? <RefreshCw className="animate-spin" size={20} /> : 'כניסה למערכת'}
           </button>
@@ -111,16 +121,9 @@ function Login() {
 
 const styles = {
   container: { 
-    height: '100vh', 
-    width: '100vw', 
-    display: 'flex', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    backgroundColor: '#0f172a', // background color with dark mode vibes
-    direction: 'rtl', 
-    fontFamily: "'Heebo', sans-serif",
-    position: 'relative',
-    overflow: 'hidden'
+    height: '100vh', width: '100vw', display: 'flex', justifyContent: 'center', alignItems: 'center', 
+    backgroundColor: '#0f172a', direction: 'rtl', fontFamily: "'Heebo', sans-serif",
+    position: 'relative', overflow: 'hidden'
   },
   bgGlow1: {
     position: 'absolute', top: '-10%', left: '-10%', width: '40%', height: '40%',
@@ -133,23 +136,14 @@ const styles = {
     borderRadius: '50%', zIndex: 0
   },
   card: { 
-    width: '90%', 
-    maxWidth: '420px', 
-    backgroundColor: 'rgba(30, 41, 59, 0.7)', // Glassmorphism
-    backdropFilter: 'blur(12px)',
-    padding: '40px', 
-    borderRadius: '24px', 
-    border: '1px solid #334155',
-    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-    zIndex: 1
+    width: '90%', maxWidth: '420px', backgroundColor: 'rgba(30, 41, 59, 0.7)', 
+    backdropFilter: 'blur(12px)', padding: '40px', borderRadius: '24px', 
+    border: '1px solid #334155', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', zIndex: 1
   },
   header: { textAlign: 'center', marginBottom: '35px' },
   logoCircle: { 
-    width: '60px', height: '60px', 
-    backgroundColor: '#3b82f6', 
-    borderRadius: '16px', 
-    display: 'flex', alignItems: 'center', justifyContent: 'center', 
-    margin: '0 auto 20px',
+    width: '60px', height: '60px', backgroundColor: '#3b82f6', borderRadius: '16px', 
+    display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px',
     boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.4)'
   },
   title: { fontSize: '26px', fontWeight: '900', color: '#fff', margin: '0 0 10px 0', letterSpacing: '-0.5px' },
@@ -160,31 +154,25 @@ const styles = {
   inputWrapper: { position: 'relative', display: 'flex', alignItems: 'center' },
   icon: { position: 'absolute', right: '16px' },
   input: { 
-    width: '100%', 
-    padding: '14px 48px 14px 16px', 
-    borderRadius: '12px', 
-    border: '1px solid #334155', 
-    fontSize: '15px', 
-    outline: 'none', 
-    backgroundColor: '#0f172a', 
-    color: '#fff',
-    transition: '0.2s focus',
+    width: '100%', padding: '14px 48px 14px 16px', borderRadius: '12px', border: '1px solid #334155', 
+    fontSize: '15px', outline: 'none', backgroundColor: '#0f172a', color: '#fff',
+    transition: '0.2s focus', textAlign: 'right', direction: 'ltr' 
   },
   eyeBtn: { position: 'absolute', left: '12px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex' },
   submitBtn: { 
-    width: '100%', 
-    padding: '16px', 
-    borderRadius: '12px', 
-    border: 'none', 
-    backgroundColor: '#3b82f6', 
-    color: '#fff', 
-    fontSize: '16px', 
-    fontWeight: '800', 
-    cursor: 'pointer', 
-    transition: '0.2s', 
-    display: 'flex', justifyContent: 'center', alignItems: 'center', 
-    marginTop: '10px',
-    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+    width: '100%', padding: '16px', borderRadius: '12px', border: 'none', 
+    backgroundColor: '#3b82f6', color: '#fff', fontSize: '16px', fontWeight: '800', 
+    cursor: 'pointer', transition: '0.2s', display: 'flex', justifyContent: 'center', 
+    alignItems: 'center', marginTop: '10px', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+  },
+  demoBox: {
+    backgroundColor: 'rgba(59, 130, 246, 0.1)', border: '1px dashed #3b82f6',
+    borderRadius: '12px', padding: '12px', marginTop: '5px', textAlign: 'center'
+  },
+  demoTitle: { fontSize: '12px', color: '#3b82f6', fontWeight: 'bold', margin: '0 0 5px 0' },
+  demoDetails: { 
+    fontSize: '13px', color: '#cbd5e1', display: 'flex', justifyContent: 'center', 
+    gap: '5px', unicodeBidi: 'plaintext'
   },
   footer: { marginTop: '30px', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' },
   footerText: { fontSize: '12px', color: '#64748b', margin: 0 }

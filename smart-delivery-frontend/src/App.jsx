@@ -89,8 +89,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
 // import customized components
-import Navbar from './Components/navbar';
-//import NavBar from "./components/NavBar";
+import NavBar from './Components/NavBar';
 import ProtectedRoute from './Components/ProtectedRoute';
 
 // import pages
@@ -119,21 +118,21 @@ function App() {
 
           <Route path="/deliveries" element={
             <ProtectedRoute allowedRole="Admin">
-              <Navbar />
+              <NavBar />
               <div style={styles.contentArea}><DeliveryDashboard /></div>
             </ProtectedRoute>
           } />
 
           <Route path="/map" element={
             <ProtectedRoute allowedRole="Admin">
-              <Navbar />
+              <NavBar />
               <div style={styles.contentArea}><MapDashboard /></div>
             </ProtectedRoute>
           } />
 
           <Route path="/courier" element={
             <ProtectedRoute allowedRole="Courier">
-              <Navbar />
+              <NavBar />
               <div style={styles.contentArea}><CourierDashboard /></div>
             </ProtectedRoute>
           } />
