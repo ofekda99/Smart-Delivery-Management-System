@@ -89,7 +89,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
 // import customized components
-import NavBar from './Components/NavBar'; 
+//import NavBar from './Components/NavBar';
+import Navbar from './Components/navbar';
 import ProtectedRoute from './Components/ProtectedRoute';
 
 // import pages
