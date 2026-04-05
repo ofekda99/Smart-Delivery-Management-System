@@ -12,6 +12,8 @@ using Smart_Delivery_Management_System.Services.Routing;
 using System;
 using System.Text;
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
@@ -45,7 +47,7 @@ builder.Services.Configure<DeliverySetting>(
 
 builder.Services.AddDbContext<DeliveryDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

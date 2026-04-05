@@ -2,9 +2,9 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Smart_Delivery_Management_System.Data;
 
 #nullable disable
@@ -12,43 +12,43 @@ using Smart_Delivery_Management_System.Data;
 namespace Smart_Delivery_Management_System.Migrations
 {
     [DbContext(typeof(DeliveryDbContext))]
-    [Migration("20251211154123_AddSoftDelete")]
-    partial class AddSoftDelete
+    [Migration("20260402215846_NewInitialPostgres")]
+    partial class NewInitialPostgres
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+                .HasAnnotation("ProductVersion", "10.0.4")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Smart_Delivery_Management_System.Models.Courier", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("IsAvailable")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -88,30 +88,45 @@ namespace Smart_Delivery_Management_System.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("CourierId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("DeliveredAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("DropoffAddress")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
+
+                    b.Property<double>("DropoffLatitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("DropoffLongitude")
+                        .HasColumnType("double precision");
 
                     b.Property<string>("PickupAddress")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
+
+                    b.Property<double>("PickupLatitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("PickupLongitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<int?>("RouteOrder")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -125,7 +140,11 @@ namespace Smart_Delivery_Management_System.Migrations
                             Id = 1,
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             DropoffAddress = "Tel Aviv, Rothschild 10",
+                            DropoffLatitude = 0.0,
+                            DropoffLongitude = 0.0,
                             PickupAddress = "Tel Aviv, Dizengoff 1",
+                            PickupLatitude = 0.0,
+                            PickupLongitude = 0.0,
                             Status = "Pending"
                         },
                         new
@@ -134,7 +153,11 @@ namespace Smart_Delivery_Management_System.Migrations
                             CourierId = 1,
                             CreatedAt = new DateTime(2024, 1, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             DropoffAddress = "Jerusalem, King George 20",
+                            DropoffLatitude = 0.0,
+                            DropoffLongitude = 0.0,
                             PickupAddress = "Jerusalem, Jaffa 5",
+                            PickupLatitude = 0.0,
+                            PickupLongitude = 0.0,
                             Status = "Assigned"
                         },
                         new
@@ -143,7 +166,11 @@ namespace Smart_Delivery_Management_System.Migrations
                             CourierId = 2,
                             CreatedAt = new DateTime(2024, 1, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             DropoffAddress = "Haifa, Herzl 15",
+                            DropoffLatitude = 0.0,
+                            DropoffLongitude = 0.0,
                             PickupAddress = "Haifa, Ben Gurion 3",
+                            PickupLatitude = 0.0,
+                            PickupLongitude = 0.0,
                             Status = "InProgress"
                         });
                 });
@@ -152,28 +179,28 @@ namespace Smart_Delivery_Management_System.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
