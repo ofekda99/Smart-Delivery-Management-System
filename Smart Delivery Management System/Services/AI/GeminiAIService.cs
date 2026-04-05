@@ -148,7 +148,7 @@ namespace Smart_Delivery_Management_System.Services.AI
 
         private async Task<string> CallGroqApi(string prompt)
         {
-            var apiKey = "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"; // שים אותו ב-appsettings
+            var apiKey = _groqApiKey;
             var url = "https://api.groq.com/openai/v1/chat/completions";
 
             var requestBody = new
