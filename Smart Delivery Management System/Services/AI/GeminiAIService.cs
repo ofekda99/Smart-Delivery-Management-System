@@ -1,5 +1,4 @@
 ﻿
-using Microsoft.Identity.Client;
 using Mscc.GenerativeAI;
 using Mscc.GenerativeAI.Types;
 using Smart_Delivery_Management_System.Repositories;
@@ -17,8 +16,6 @@ namespace Smart_Delivery_Management_System.Services.AI
         private readonly ICourierRepository _courierRepo;
         private readonly IAIOperationExecutor _aiExecutor;
         private readonly string _groqApiKey;
-        private static int _currentKeyIndex = 0;
-
         private readonly HttpClient _httpClient;
 
         public GeminiAIService(IConfiguration config, IDeliveryRepository deliveryRepo, ICourierRepository courierRepository, IAIOperationExecutor executor)
@@ -151,14 +148,14 @@ namespace Smart_Delivery_Management_System.Services.AI
             var responseString = await response.Content.ReadAsStringAsync();
 
             if (response.StatusCode == (HttpStatusCode)429) // Too Many Requests
-                return null;
+                return null!;
 
             using var doc = JsonDocument.Parse(responseString);
             return doc.RootElement
                 .GetProperty("choices")[0]
                 .GetProperty("message")
                 .GetProperty("content")
-                .GetString();
+                .GetString()!;
         }
 
         public async Task<string> GetSmartAiResponse(string prompt)
