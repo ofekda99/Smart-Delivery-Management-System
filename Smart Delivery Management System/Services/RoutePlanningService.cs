@@ -38,14 +38,13 @@ namespace Smart_Delivery_Management_System.Services
             var result = new List<CourierRouteDto>();
             var allDeliveriesToUpdate = new List<Delivery>();
 
-            // build a route foreach courier
             foreach (var courierAssignment in assignmentsDeliveris.Assignments)
             {
                 var courierModel = courierAssignment.CourierId;
                 var assignedDeliveries = courierAssignment.Deliveries;
 
                 var optimizedDeliveries =
-                    _routeOptimizationService.OptimizeRouteForCourier(
+                    await _routeOptimizationService.OptimizeRouteForCourier(
                         assignedDeliveries,
                         _settings);
 
@@ -57,7 +56,6 @@ namespace Smart_Delivery_Management_System.Services
                     delivery.RouteOrder = order++;
                     allDeliveriesToUpdate.Add(delivery);
 
-                    // Create RouteStopDto
                     routeStops.Add(new RouteStopDto
                     {
                         DeliveryId = delivery.Id,
@@ -66,7 +64,6 @@ namespace Smart_Delivery_Management_System.Services
                     });
                 }
 
-                // Add Dto's to result
                 result.Add(new CourierRouteDto
                 {
                     CourierId = courierAssignment.CourierId,

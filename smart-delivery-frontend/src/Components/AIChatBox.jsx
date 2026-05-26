@@ -1,164 +1,9 @@
-// import { useState, useRef, useEffect } from 'react';
-// import axios from 'axios';
-// import { MessageSquare, X, Send, Bot, Loader2, Maximize2 } from 'lucide-react';
-// import './AIChatBox.css';
-
-// function AIChatBox({ onDataChange }) {
-//     const [isOpen, setIsOpen] = useState(false);
-//     const [messages, setMessages] = useState([
-//         { text: "שלום! אני העוזר הלוגיסטי שלך. איך אפשר לעזור?", isAi: true }
-//     ]);
-//     const [input, setInput] = useState('');
-//     const [isLoading, setIsLoading] = useState(false);
-    
-//     // States לגרירה
-//     const [position, setPosition] = useState({ x: 30, y: 30 });
-//     const [isDragging, setIsDragging] = useState(false);
-//     const dragItem = useRef();
-//     const dragStartPos = useRef();
-
-//     const messagesEndRef = useRef(null);
-
-//     const scrollToBottom = () => {
-//         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-//     };
-
-//     useEffect(() => {
-//         if (isOpen) scrollToBottom();
-//     }, [messages, isOpen]);
-
-//     // פונקציות גרירה (Smooth Drag)
-//     const handleMouseDown = (e) => {
-//         if (e.target.closest('.chat-header') || e.target.closest('.chat-toggle-btn')) {
-//             setIsDragging(true);
-//             dragStartPos.current = {
-//                 x: e.clientX - position.x,
-//                 y: window.innerHeight - e.clientY - position.y
-//             };
-//         }
-//     };
-
-//     useEffect(() => {
-//         const handleMouseMove = (e) => {
-//             if (!isDragging) return;
-//             setPosition({
-//                 x: e.clientX - dragStartPos.current.x,
-//                 y: window.innerHeight - e.clientY - dragStartPos.current.y
-//             });
-//         };
-//         const handleMouseUp = () => setIsDragging(false);
-
-//         if (isDragging) {
-//             window.addEventListener('mousemove', handleMouseMove);
-//             window.addEventListener('mouseup', handleMouseUp);
-//         }
-//         return () => {
-//             window.removeEventListener('mousemove', handleMouseMove);
-//             window.removeEventListener('mouseup', handleMouseUp);
-//         };
-//     }, [isDragging]);
-
-//     const handleSend = async () => {
-//         if (!input.trim() || isLoading) return;
-
-//         const userMsg = input;
-//         setMessages(prev => [...prev, { text: userMsg, isAi: false }]);
-//         setInput('');
-//         setIsLoading(true);
-
-//         try {
-//             const response = await axios.post('https://localhost:44333/api/AI/ask', { 
-//                 message: userMsg 
-//             });
-
-//             // בדיקה שהתשובה הגיעה מהבנקד
-//             if (response.data) {
-//                 const { reply, actionExecuted } = response.data;
-                
-//                 setMessages(prev => [...prev, { 
-//                     text: reply || "הפעולה בוצעה בהצלחה.", 
-//                     isAi: true 
-//                 }]);
-
-//                 if (actionExecuted && onDataChange) {
-//                     onDataChange(); // מרענן את הטבלה ב-Dashboard
-//                 }
-//             }
-//         } catch (error) {
-//             console.error("AI Error:", error);
-//             setMessages(prev => [...prev, { text: "שגיאה בתקשורת עם השרת. וודא שהבנקד רץ.", isAi: true }]);
-//         } finally {
-//             setIsLoading(false);
-//         }
-//     };
-
-//     return (
-//         <div 
-//             className="ai-chat-wrapper" 
-//             style={{ left: `${position.x}px`, bottom: `${position.y}px` }}
-//         >
-//             {/* כפתור הבועה הצפה (גם הוא גריר) */}
-//             <div className="chat-anchor" onMouseDown={handleMouseDown}>
-//                 <button 
-//                     onClick={() => setIsOpen(!isOpen)} 
-//                     className={`chat-toggle-btn ${isOpen ? 'active' : ''}`}
-//                 >
-//                     {isOpen ? <X size={28} /> : <Bot size={28} />}
-//                 </button>
-//             </div>
-
-//             {/* חלון הצ'אט המרכזי */}
-//             {isOpen && (
-//                 <div className="chat-window-container resizable">
-//                     <div className="chat-header" onMouseDown={handleMouseDown}>
-//                         <div className="header-info">
-//                             <div className="online-dot"></div>
-//                             <span>עוזר לוגיסטי AI</span>
-//                         </div>
-//                         <div className="header-actions">
-//                              <X size={18} onClick={() => setIsOpen(false)} style={{cursor:'pointer'}} />
-//                         </div>
-//                     </div>
-                    
-//                     <div className="chat-messages">
-//                         {messages.map((msg, index) => (
-//                             <div key={index} className={`message-bubble ${msg.isAi ? 'ai' : 'user'}`}>
-//                                 {msg.text}
-//                             </div>
-//                         ))}
-//                         {isLoading && (
-//                             <div className="message-bubble ai loading-dots">
-//                                 <span>מנתח נתונים</span>
-//                                 <Loader2 size={14} className="spin-icon" />
-//                             </div>
-//                         )}
-//                         <div ref={messagesEndRef} />
-//                     </div>
-
-//                     <div className="chat-input-area">
-//                         <input 
-//                             value={input} 
-//                             onChange={(e) => setInput(e.target.value)}
-//                             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-//                             placeholder="כתוב פקודה..."
-//                         />
-//                         <button onClick={handleSend} disabled={isLoading}>
-//                             <Send size={18} />
-//                         </button>
-//                     </div>
-//                 </div>
-//             )}
-//         </div>
-//     );
-// }
-
-// export default AIChatBox;
-
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { Bot, X, Send, Loader2, Sparkles, Trash2, PlusCircle, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './AIChatBox.css';
+import { API_BASE } from '../apiConfig';
 
 function AIChatBox({ onDataChange }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -257,7 +102,7 @@ const runTypingEffect = (fullText) => {
 
     try {
         //const response = await axios.post('https://localhost:44333/api/AI/ask', { message: textToSend });
-        const response = await axios.post('https://smart-delivery-management-system-t6lh.onrender.com/api/AI/ask', { message: textToSend });
+        const response = await axios.post(`${API_BASE}/AI/ask`, { message: textToSend });
         const { answer, actionExecuted } = response.data;
         // 2. בדיקה קריטית: האם התשובה בפורמט הנכון?
         if (answer) {

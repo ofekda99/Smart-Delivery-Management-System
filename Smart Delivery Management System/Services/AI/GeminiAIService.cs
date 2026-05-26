@@ -33,15 +33,9 @@ namespace Smart_Delivery_Management_System.Services.AI
 
         public async Task<AiAnswer> ProcessManagerRequestAsync(string userMessage)
         {
-            // 1. שליפת נתונים חיים מה-DB כדי לתת ל-AI "הקשר" (Context)
             var deliveries = await _deliveryRepo.GetAll();
             var couriers = await _courierRepo.GetAll();
 
-            // בניית תמונת מצב טקסטואלית
-            //var contextBuilder = new StringBuilder();
-            //contextBuilder.AppendLine("נתוני מערכת נוכחיים:");
-            //contextBuilder.AppendLine("משלוחים: " + JsonSerializer.Serialize(deliveries.Select(d => new { d.Id, d.Status, d.DropoffAddress, d.CourierId })));
-            //contextBuilder.AppendLine("שליחים: " + JsonSerializer.Serialize(couriers.Select(c => new { c.Id, c.Name, dCount = deliveries.Count(d => d.CourierId == c.Id) })));
             var contextBuilder = new StringBuilder();
             contextBuilder.AppendLine("### נתוני מערכת נוכחיים (נא להשתמש בשמות המדויקים):");
 
@@ -57,12 +51,6 @@ namespace Smart_Delivery_Management_System.Services.AI
                 var count = deliveries.Count(d => d.CourierId == c.Id);
                 contextBuilder.AppendLine($"- שם השליח: {c.Name}, מזהה שליח: {c.Id}, כמות משלוחים בטיפול: {count}");
             }
-            // 2. הנחיות ל-AI (System Prompt)
-            //string systemPrompt = @"אתה עוזר לוגיסטי חכם. השתמש בנתונים שסופקו כדי לענות.
-            //- אם המשתמש רוצה למחוק משלוח, ענה בפורמט: [EXEC_DELETE:ID].
-            //- אם המשתמש שואל שאלות ניתוח (כמו 'מי הכי עמוס'), חשב לפי הנתונים וענה בעברית.
-            //- תמיד ענה בנימוס ובקצרה.";
-
             string systemInstructions = @"אתה עוזר לוגיסטי חכם במערכת ניהול משלוחים. 
 לרשותך נתוני JSON של משלוחים ושליחים. 
 עליך לענות על שאלות ולבצע פעולות לפי הפורמטים הבאים בלבד:
@@ -87,12 +75,9 @@ namespace Smart_Delivery_Management_System.Services.AI
 
             string fullPrompt = $"{systemInstructions}\n\n{contextBuilder}\n\nUser Message: {userMessage}";
 
-            // 3. קריאה ל-API של Gemini
-            //var aiRawResponse = await CallGroqApi(fullPrompt);
             var aiRawResponse = await GetSmartAiResponse(fullPrompt);
             bool hasActionExecuted = aiRawResponse.Contains("[EXEC", StringComparison.OrdinalIgnoreCase);
             string answer = await _aiExecutor.ExecuteAsync(aiRawResponse);
-            // 4. עיבוד התשובה וביצוע פעולות במידת הצורך
             var aiAnswer = new AiAnswer
             {
                 Answer = answer,
@@ -104,10 +89,7 @@ namespace Smart_Delivery_Management_System.Services.AI
 
         private async Task<string> CallGeminiApi(string prompt)
         {
-            // var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={_apiKey}";
             var url = $"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={_geminiApiKey.Trim()}";
-            //var url = $"https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash-lite:generateContent?key={_apiKey.Trim()}";
-            // var url = $"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key={_apiKey.Trim()}";
             var requestBody = new
             {
                 contents = new[] {
@@ -129,7 +111,7 @@ namespace Smart_Delivery_Management_System.Services.AI
             using var doc = JsonDocument.Parse(responseString);
             try
             {
-                // שימוש ב-TryGetProperty מונע קריסה אם המפתח חסר
+                // prevents crash if the key is missing in the response
                 if (doc.RootElement.TryGetProperty("candidates", out var candidates) && candidates.GetArrayLength() > 0)
                 {
                     return candidates[0]
@@ -157,10 +139,8 @@ namespace Smart_Delivery_Management_System.Services.AI
                 messages = new[] {
             new { role = "user", content = prompt }
         },
-                // --- כאן אתה מוסיף את השורה הזו ---
                 temperature = 0,
-                // ----------------------------------
-                max_tokens = 500 // אופציונלי: מגביל אותו שלא יחפור תשובות ארוכות מדי
+                max_tokens = 500
             };
 
             var jsonRequest = JsonSerializer.Serialize(requestBody);
@@ -184,101 +164,17 @@ namespace Smart_Delivery_Management_System.Services.AI
         public async Task<string> GetSmartAiResponse(string prompt)
         {
 
-            // 1. ניסיון ראשון: Groq (מהיר וחסכוני)
             var a = await CallGroqApi(prompt);
 
             if (a == null)
             {
                 a = await CallGeminiApi(prompt);
+                Console.WriteLine("Groq is limited, switching to Gemini...");
             }
-
-            // 2. נתיב גיבוי: Gemini (אם Groq חסם אותנו)
-            Console.WriteLine("Groq is limited, switching to Gemini...");
 
             return a;
 
         }
 
-        //public async Task<string> CallGroqWithRotation(string prompt)
-        //{
-        //    int attempts = 0;
-
-        //    // הוא ינסה כמספר המפתחות שיש לך
-        //    while (attempts < _apiKeys.Length)
-        //    {
-        //        string currentKey = _apiKeys[_currentKeyIndex];
-
-        //        try
-        //        {
-        //            var request = new HttpRequestMessage(HttpMethod.Post, "https://api.groq.com/openai/v1/chat/completions");
-        //            request.Headers.Add("Authorization", $"Bearer {currentKey}");
-
-        //            // הכנת ה-Body (תוודא שזה תואם למה שיש לך היום)
-        //            var body = new
-        //            {
-        //                model = "llama-3.3-70b-versatile",
-        //                messages = new[] {
-        //    new { role = "user", content = prompt }
-        //},
-        //                // --- כאן אתה מוסיף את השורה הזו ---
-        //                temperature = 0,
-        //                // ----------------------------------
-        //                max_tokens = 500 // אופציונלי: מגביל אותו שלא יחפור תשובות ארוכות מדי
-        //            };
-        //            request.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
-
-        //            var response = await _httpClient.SendAsync(request);
-        //            var responseString = await response.Content.ReadAsStringAsync();
-
-        //            if (response.StatusCode == (HttpStatusCode)429) // Too Many Requests
-        //            {
-        //                Console.WriteLine($"Key index {_currentKeyIndex} is rate-limited. Switching...");
-        //                RotateKey();
-        //                attempts++;
-        //                continue;
-        //            }
-
-        //            using var doc = JsonDocument.Parse(responseString);
-        //            return doc.RootElement
-        //                .GetProperty("choices")[0]
-        //                .GetProperty("message")
-        //                .GetProperty("content")
-        //                .GetString();
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            Console.WriteLine($"Error with key index {_currentKeyIndex}: {ex.Message}");
-        //            RotateKey();
-        //            attempts++;
-        //        }
-        //    }
-
-        //    //return "כל המפתחות חסומים כרגע. נסה שוב בעוד דקה.";
-        //    return null;
-        //}
-
-        //private void RotateKey()
-        //{
-        //    _currentKeyIndex = (_currentKeyIndex + 1) % _apiKeys.Length;
-        //}
-
-        //private async Task<string> HandleAIResponse(string aiText)
-        //{
-        //    // בדיקת פקודת מחיקה
-        //    if (aiText.Contains("[EXEC_DELETE:"))
-        //    {
-        //        int startIndex = aiText.IndexOf("[EXEC_DELETE:") + "[EXEC_DELETE:".Length;
-        //        int endIndex = aiText.IndexOf("]", startIndex);
-        //        string idStr = aiText.Substring(startIndex, endIndex - startIndex);
-
-        //        if (int.TryParse(idStr, out int id))
-        //        {
-        //            await _deliveryRepo.Delete(id);
-        //            return $"בוצע. מחקתי את משלוח מספר {id} מהמערכת כפי שביקשת.";
-        //        }
-        //    }
-
-        //    return aiText; // החזרת תשובה טקסטואלית רגילה
-        //}
     }
 }

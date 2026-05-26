@@ -14,23 +14,29 @@ namespace Smart_Delivery_Management_System.Services
         {
             _repo = repo;
         }
+
         public async Task<Result> AssignDeliveriesAsync(
-            List<Courier> availableCouriers,
-            List<Delivery> pendingDeliveries)
+    List<Courier> availableCouriers,
+    List<Delivery> pendingDeliveries)
         {
-            // Implements the assigment based on RoundRobin Algorithm
             var courierAssigments = new List<CourierAssignmentDto>();
-            int courierIndex = 0;
 
             if (!availableCouriers.Any())
-            {
                 return Result.Fail("Assignment failed: No available couriers were found");
-            }
 
             if (!pendingDeliveries.Any())
-            {
                 return Result.Success(courierAssigments);
-            }
+
+            // polar sweep center point (Holon)
+
+            double centerLat = 32.015;
+            double centerLon = 34.787;
+
+            // Polar Sweep: sort deliveries by angle around center point
+            var sortedDeliveries = pendingDeliveries
+                .OrderBy(d => Math.Atan2(d.DropoffLatitude - centerLat, d.DropoffLongitude - centerLon))
+                .ToList();
+
 
             foreach (var courier in availableCouriers)
             {
@@ -42,19 +48,32 @@ namespace Smart_Delivery_Management_System.Services
                 });
             }
 
-            foreach (var delivery in pendingDeliveries)
-            {
-                var courier = availableCouriers[courierIndex];
-                delivery.CourierId = courier.Id;
-                delivery.Status = "Assigned";
+            // partition sorted deliveries into batches, one per courier
+            int total = sortedDeliveries.Count;
+            int n = availableCouriers.Count;
 
-                var courierDto = courierAssigments.First(c=> c.CourierId == courier.Id);
-                courierDto.Deliveries.Add(delivery);
-                courierIndex = (courierIndex + 1) % availableCouriers.Count;
+
+            int batchSize = (int)Math.Ceiling((double)total / n);
+
+            for (int i = 0; i < n; i++)
+            {
+                var courierDto = courierAssigments[i];
+
+
+                var courierBatch = sortedDeliveries
+                    .Skip(i * batchSize)
+                    .Take(batchSize)
+                    .ToList();
+
+                foreach (var delivery in courierBatch)
+                {
+                    delivery.CourierId = courierDto.CourierId;
+                    delivery.Status = "Assigned";
+                    courierDto.Deliveries.Add(delivery);
+                }
             }
 
             await _repo.Save();
-
             return Result.Success(courierAssigments);
         }
     }

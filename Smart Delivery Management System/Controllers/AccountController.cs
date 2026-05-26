@@ -20,7 +20,7 @@ namespace Smart_Delivery_Management_System.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserCreateDto dto)
         {
-            // בדיקה אם המשתמש כבר קיים
+
             if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
                 return BadRequest("האימייל כבר קיים במערכת");
 
@@ -28,9 +28,9 @@ namespace Smart_Delivery_Management_System.Controllers
             {
                 FullName = dto.FullName,
                 Email = dto.Email,
-                // במציאות משתמשים ב-BCrypt להצפנה, כאן נשמור פשוט לצורך הלמידה
+                // TODO: hash password with BCrypt before storing in production
                 PasswordHash = dto.Password,
-                Role = "Courier" // או מה שמגיע מה-DTO אם הוספת שדה Role
+                Role = "Courier"
             };
 
             _context.Users.Add(user);
