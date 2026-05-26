@@ -44,7 +44,7 @@ namespace Smart_Delivery_Management_System.Services
                 var assignedDeliveries = courierAssignment.Deliveries;
 
                 var optimizedDeliveries =
-                    await _routeOptimizationService.OptimizeRouteForCourier(
+                    _routeOptimizationService.OptimizeRouteForCourier(
                         assignedDeliveries,
                         _settings);
 
